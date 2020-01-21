@@ -1,0 +1,51 @@
+echo "
+kind: Service
+apiVersion: v1
+metadata:
+  name: proxy-to-unique-api-test
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+" | kubectl create -f -
+
+echo "
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: proxy-from-k8s-to-unique-api-test
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /unique
+        backend:
+          serviceName: proxy-to-unique-api-test
+          servicePort: 80
+" | kubectl create -f -
+
+echo "
+kind: Endpoints
+apiVersion: v1
+metadata:
+ name: proxy-to-unique-api-test
+subsets:
+ - addresses:
+     - ip: 10.250.85.52
+   ports:
+     - port: 80
+" | kubectl create -f -
+
+
+echo "
+kind: Service
+apiVersion: v1
+metadata:
+  name: proxy-to-unique-api-test
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+  type: ExternalName
+  externalName: 10.250.86.52/x5/form/customQuery/doQuery?alias=5GSiteList
+" | kubectl create -f -

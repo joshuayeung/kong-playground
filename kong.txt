@@ -49,3 +49,150 @@ spec:
   type: ExternalName
   externalName: 10.250.86.52/x5/form/customQuery/doQuery?alias=5GSiteList
 " | kubectl create -f -
+
+
+echo "
+kind: Service
+apiVersion: v1
+metadata:
+  name: proxy-to-unique
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+    name: unique
+    type: ExternalName
+    externalName: htt
+" | kubectl create -f -
+
+echo "
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: proxy-to-unique
+subsets:
+  - addresses:
+      - ip: 10.250.86.52
+    ports:
+      - protocol: TCP
+        port: 80
+        name: unique
+" | kubectl create -f -
+
+echo "
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: proxy-from-k8s-to-unique
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /unique
+        backend:
+          serviceName: proxy-to-unique
+          servicePort: 80
+" | kubectl create -f -
+
+echo "
+kind: Service
+apiVersion: v1
+metadata:
+  name: proxy-to-httpbin
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+  type: ExternalName
+  externalName: httpbin.org
+" | kubectl create -f -
+
+echo "
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: proxy-from-k8s-to-httpbin
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /httpbin
+        backend:
+          serviceName: proxy-to-httpbin
+          servicePort: 80
+" | kubectl create -f -
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: MyApp
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 9376
+  externalIPs:
+    - 80.11.12.10
+
+echo "
+kind: Service
+apiVersion: v1
+metadata:
+  name: proxy-to-unique
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+  externalIPs:
+    - 10.250.86.52
+" | kubectl create -f -
+
+echo "
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: proxy-from-k8s-to-unique
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /unique
+        backend:
+          serviceName: proxy-to-unique
+          servicePort: 80
+" | kubectl create -f -
+
+kubectl patch svc proxy-to-unique -p '{"spec": {"type": "NodePort"}}'
+
+docker network create kong-net
+
+docker run -d --name kong-database \
+               --network=kong-net \
+               -p 9042:9042 \
+               cassandra:3
+
+docker run --rm \
+     --network=kong-net \
+     -e "KONG_DATABASE=cassandra" \
+     -e "KONG_PG_HOST=kong-database" \
+     -e "KONG_CASSANDRA_CONTACT_POINTS=kong-database" \
+     kong:latest kong migrations bootstrap
+
+docker run -d --name kong \
+     --network=kong-net \
+     -e "KONG_DATABASE=cassandra" \
+     -e "KONG_PG_HOST=kong-database" \
+     -e "KONG_CASSANDRA_CONTACT_POINTS=kong-database" \
+     -e "KONG_PROXY_ACCESS_LOG=/dev/stdout" \
+     -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" \
+     -e "KONG_PROXY_ERROR_LOG=/dev/stderr" \
+     -e "KONG_ADMIN_ERROR_LOG=/dev/stderr" \
+     -e "KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl" \
+     -p 8000:8000 \
+     -p 8443:8443 \
+     -p 8001:8001 \
+     -p 8444:8444 \
+     kong:latest

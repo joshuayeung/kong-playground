@@ -1,0 +1,33 @@
+---
+  admin: 
+    containerPort: "8001"
+    enabled: "true"
+    servicePort: "8001"
+    useTLS: "false"
+  env: 
+    database: "postgres"
+  livenessProbe: 
+    httpGet: 
+      scheme: "HTTP"
+  postgresql: 
+    enabled: "true"
+    postgresqlUsername: kong
+    postgresqlDatabase: kong
+    service:
+      port: 5432
+  readinessProbe: 
+    httpGet: 
+      scheme: "HTTP"
+      
+env.database postgres
+admin.enabled true
+admin.useTLS false
+admin.servicePort 8001
+admin.containerPort 8001
+proxy.type NodePort
+postgresql.enabled true
+postgresql.postgresqlUsername kong
+postgresql.postgresqlDatabase kong
+postgresql.service.port 5432
+livenessProbe.httpGet.scheme HTTP
+readinessProbe.httpGet.scheme HTTP

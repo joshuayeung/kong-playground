@@ -19,15 +19,43 @@
     httpGet: 
       scheme: "HTTP"
       
-env.database postgres
-admin.enabled true
-admin.useTLS false
-admin.servicePort 8001
-admin.containerPort 8001
-proxy.type NodePort
-postgresql.enabled true
-postgresql.postgresqlUsername kong
-postgresql.postgresqlDatabase kong
-postgresql.service.port 5432
-livenessProbe.httpGet.scheme HTTP
-readinessProbe.httpGet.scheme HTTP
+replicaCount: 3
+admin.enabled: true
+admin.useTLS: false
+admin.servicePort: 8001
+admin.containerPort: 8001
+proxy.type: NodePort
+env.database: postgres
+postgresql.enabled: true
+postgresql.postgresqlUsername: kong
+postgresql.postgresqlDatabase: kong
+postgresql.service.port: 5432
+livenessProbe.httpGet.scheme: HTTP
+readinessProbe.httpGet.scheme: HTTP
+
+---
+  admin: 
+    containerPort: "8001"
+    enabled: "true"
+    servicePort: "8001"
+    useTLS: "false"
+  env: 
+    database: "postgres"
+    HTTP_PROXY: "http://172.19.1.179:3128"
+    HTTPS_PROXY: "http://172.19.1.179:3128"
+    NO_PROXY: "localhost,127.0.0.1,0.0.0.0,172.17.0.1,192.168.0.0/24"
+  livenessProbe: 
+    httpGet: 
+      scheme: "HTTP"
+  postgresql: 
+    enabled: "true"
+    postgresqlDatabase: "kong"
+    postgresqlUsername: "kong"
+    service: 
+      port: "5432"
+  proxy: 
+    type: "NodePort"
+  readinessProbe: 
+    httpGet: 
+      scheme: "HTTP"
+  replicaCount: "3"

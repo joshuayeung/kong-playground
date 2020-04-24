@@ -1,0 +1,8 @@
+
+helm repo add wso2 https://helm.wso2.com && helm repo update
+
+helm install --name <RELEASE_NAME> wso2/am-pattern-1 --version 3.1.0-1 --namespace <NAMESPACE> --set wso2.subscription.username=<SUBSCRIPTION_USERNAME> --set wso2.subscription.password=<SUBSCRIPTION_PASSWORD>
+
+2
+
+Ac

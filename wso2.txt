@@ -1,8 +1,17 @@
 
 helm repo add wso2 https://helm.wso2.com && helm repo update
 
-helm install --name <RELEASE_NAME> wso2/am-pattern-1 --version 3.1.0-1 --namespace <NAMESPACE> --set wso2.subscription.username=<SUBSCRIPTION_USERNAME> --set wso2.subscription.password=<SUBSCRIPTION_PASSWORD>
+kubectl create namespace wso2
+helm install wso2 wso2/am-pattern-1 --version 3.1.0-1 --namespace wso2 --set wso2.subscription.username=wso2 --set wso2.subscription.password=Changeme_123
 
-2
+ wget https://product-dist.wso2.com/downloads/api-manager/3.1.0/instruction-pages/subscription/docker/docker-apim-3.1.0.zip
+unzip docker-apim-3.1.0.zip
+cd docker-apim-3.1.0/docker-compose/
+cd apim-with-analytics
 
-Ac
+
+
+
+sed 's/hostname = "localhost"/hostname = "10.250.70.191"/' ~/wso2am-3.1.0/repository/conf/deployment.toml > ~/wso2am-3.1.0/repository/conf/deployment.toml.changed && mv ~/wso2am-3.1.0/repository/conf/deployment.toml.changed ~/wso2am-3.1.0/repository/conf/deployment.toml
+
+sed 's/hostname = "10.250.70.191"/hostname = "localhost"/' ~/wso2am-3.1.0/repository/conf/deployment.toml > ~/wso2am-3.1.0/repository/conf/deployment.toml.changed && mv ~/wso2am-3.1.0/repository/conf/deployment.toml.changed ~/wso2am-3.1.0/repository/conf/deployment.toml
